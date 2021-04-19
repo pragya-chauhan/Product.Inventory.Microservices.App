@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  backend:    #name of service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+    depends_on:   #means db should run first then this container
+      - db
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python -u consumer.py'
+    depends_on:
+      - db
+#add an image of mysql databse, add command to restart sometimes stops which will also stop docker container
+#set env variables
+  db:
+    image: mysql:5.7.22
+    restart: always
+    environment:
+      MYSQL_DATABASE: admin     #choose desired values
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql    #imp when storing data need to be mapped in a folder so all files in dbdata folder
+    ports:
+      - 33066:3306    #not required 3306 inside docker container 33066 outside the port we want
